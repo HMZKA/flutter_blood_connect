@@ -3,9 +3,13 @@ import 'package:flutter_blood_connect/components.dart';
 import 'package:flutter_blood_connect/constants.dart';
 import 'package:flutter_blood_connect/flip_card_widget.dart';
 import 'package:flutter_blood_connect/login_screen.dart';
+import 'package:flutter_blood_connect/profile_screen.dart';
 import 'package:flutter_blood_connect/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
+import "dart:html" as html;
+import 'app_cache.dart';
+import 'donation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({super.key});
@@ -15,34 +19,101 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String? user = AppCache.getData(key: "login") ?? "";
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: myAppBar(actions: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: ElevatedButton(
-            onPressed: () {
-              pushNavigation(context, RegisterScreen());
-            },
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.red)),
-            child: const Text("Register"),
+    List<Widget> auth = [
+      Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ElevatedButton(
+          onPressed: () {
+            pushNavigation(context, RegisterScreen());
+          },
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red)),
+          child: const Text("Register"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ElevatedButton(
+          onPressed: () {
+            pushNavigation(context, LoginScreen());
+          },
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red)),
+          child: const Text("Login"),
+        ),
+      )
+    ];
+    List<Widget> donate = [
+      Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ElevatedButton(
+          onPressed: () {
+            pushNavigation(context, DonationScreen());
+          },
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red)),
+          child: const Text("Donate"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ElevatedButton(
+          onPressed: () {
+            requestBloodDialog(context);
+          },
+          style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.red)),
+          child: const Text("Request"),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(10),
+        child: PopupMenuButton(
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text("My Profile"),
+                onTap: () {
+                  pushNavigation(context, ProfileScreen());
+                },
+              ),
+              onTap: () {},
+            ),
+            PopupMenuItem(
+              child: Text("Logout"),
+              onTap: () {
+                html.window.location.reload();
+                setState(() {
+                  AppCache.clear();
+                  user = "";
+                });
+              },
+            )
+          ],
+          child: Row(
+            children: const [
+              Text("User"),
+              SizedBox(
+                width: 2,
+              ),
+              Icon(Icons.arrow_drop_down)
+            ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: ElevatedButton(
-            onPressed: () {
-              //  pushNavigation(context, LoginScreen());
-              requestBloodDialog(context);
-            },
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.red)),
-            child: const Text("Login"),
-          ),
-        )
-      ]),
+      )
+    ];
+    List<Widget> actions = user == "" ? auth : donate;
+    return Scaffold(
+      appBar: myAppBar(actions: actions),
       body: SingleChildScrollView(
         child: Column(
           children: [

@@ -92,6 +92,7 @@ class RegisterScreen extends StatelessWidget {
                             lable: const Text("Password"),
                             hint: "P@ssw0rd",
                             controller: passwordController,
+                            isSecure: true,
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return "This field is required";

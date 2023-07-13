@@ -13,4 +13,8 @@ class AppCache {
   static getData({required String key}) {
     return sharedPreferences?.get(key);
   }
+
+  static clear() {
+    sharedPreferences?.clear();
+  }
 }

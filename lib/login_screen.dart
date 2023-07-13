@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blood_connect/components.dart';
+import 'package:flutter_blood_connect/home_screen.dart';
 import 'package:flutter_blood_connect/register_screen.dart';
 import 'package:flutter_blood_connect/text_field.dart';
 import 'package:lottie/lottie.dart';
+
+import 'app_cache.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
@@ -63,6 +66,7 @@ class LoginScreen extends StatelessWidget {
                         }, controller: phoneNumberController),
                         MyTextField().build(context,
                             lable: const Text("Password"),
+                            isSecure: true,
                             hint: "P@ssw0rd", validator: (value) {
                           if (value!.isEmpty) {
                             return "This field is required";
@@ -79,7 +83,11 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              if (formKey.currentState!.validate()) {}
+                              if (formKey.currentState!.validate()) {
+                                AppCache.setString(key: "login", value: "user");
+                                pushAndRemoveUntil(context, HomeScreen());
+                                print(AppCache.getData(key: "login"));
+                              }
                             }),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

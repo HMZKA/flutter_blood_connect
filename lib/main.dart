@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blood_connect/app_cache.dart';
 import 'package:flutter_blood_connect/components.dart';
 import 'package:flutter_blood_connect/donation_screen.dart';
 import 'package:flutter_blood_connect/home_screen.dart';
@@ -7,6 +8,8 @@ import 'package:flutter_blood_connect/profile_screen.dart';
 import 'login_screen.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppCache.init();
   runApp(MyApp());
 }
 

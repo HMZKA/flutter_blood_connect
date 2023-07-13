@@ -124,3 +124,11 @@ pushNavigation(context, widget) {
     builder: (context) => widget,
   ));
 }
+
+pushAndRemoveUntil(context, screen) {
+  Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => screen,
+      ),
+      (route) => false);
+}
