@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blood_connect/constants.dart';
-import 'package:flutter_blood_connect/request_blood_dialog.dart';
-import 'package:flutter_blood_connect/text_field.dart';
+import 'package:flutter_blood_connect/components/request_blood_dialog.dart';
 
 PreferredSizeWidget myAppBar({List<Widget>? actions, Widget? leading}) {
   return AppBar(
@@ -131,4 +129,11 @@ pushAndRemoveUntil(context, screen) {
         builder: (context) => screen,
       ),
       (route) => false);
+}
+
+snackBar({required String message, required Color backgroundColor}) {
+  return SnackBar(
+    content: Center(child: Text(message)),
+    backgroundColor: backgroundColor,
+  );
 }

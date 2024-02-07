@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+
+var scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+String baseUrl = "http://192.168.48.156:8000";
+
 List<String> diseasesPreventingBloodDonation = [
   "Healthy",
   "HIV/AIDS",

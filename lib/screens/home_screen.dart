@@ -1,14 +1,18 @@
+import 'package:buildcondition/buildcondition.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blood_connect/components.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_blood_connect/components/components.dart';
 import 'package:flutter_blood_connect/constants.dart';
-import 'package:flutter_blood_connect/flip_card_widget.dart';
-import 'package:flutter_blood_connect/login_screen.dart';
-import 'package:flutter_blood_connect/profile_screen.dart';
-import 'package:flutter_blood_connect/register_screen.dart';
+import 'package:flutter_blood_connect/controllers/app_cubit/app_cubit.dart';
+import 'package:flutter_blood_connect/controllers/auth_cubit/auth_cubit.dart';
+import 'package:flutter_blood_connect/components/flip_card_widget.dart';
+import 'package:flutter_blood_connect/screens/login_screen.dart';
+import 'package:flutter_blood_connect/screens/profile_screen.dart';
+import 'package:flutter_blood_connect/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:lottie/lottie.dart';
 import "dart:html" as html;
-import 'app_cache.dart';
+import '../utils/app_cache.dart';
 import 'donation_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String? user = AppCache.getData(key: "login") ?? "";
+  String? user = AppCache.getData(key: "token") ?? "";
   @override
   void initState() {
     super.initState();
@@ -35,8 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
             pushNavigation(context, RegisterScreen());
           },
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.red)),
-          child: const Text("Register"),
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)))),
+          child: const Text(
+            "Register",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ),
       Padding(
@@ -46,8 +55,13 @@ class _HomeScreenState extends State<HomeScreen> {
             pushNavigation(context, LoginScreen());
           },
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.red)),
-          child: const Text("Login"),
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)))),
+          child: const Text(
+            "Login",
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       )
     ];
@@ -59,7 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
             pushNavigation(context, DonationScreen());
           },
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.red)),
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)))),
           child: const Text("Donate"),
         ),
       ),
@@ -70,45 +86,49 @@ class _HomeScreenState extends State<HomeScreen> {
             requestBloodDialog(context);
           },
           style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.red)),
+              backgroundColor: MaterialStateProperty.all(Colors.red),
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)))),
           child: const Text("Request"),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(10),
-        child: PopupMenuButton(
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text("My Profile"),
-                onTap: () {
-                  pushNavigation(context, ProfileScreen());
-                },
+      BlocConsumer<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is LogoutSuccessState) {
+            html.window.location.reload();
+            pushAndRemoveUntil(context, HomeScreen());
+          }
+        },
+        builder: (context, state) {
+          return Padding(
+            padding: const EdgeInsets.all(10),
+            child: PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: Text("My Profile"),
+                  onTap: () {
+                    pushNavigation(context, const ProfileScreen());
+                  },
+                ),
+                PopupMenuItem(
+                  child: const Text("Logout"),
+                  onTap: () {
+                    AuthCubit().get(context).logout();
+                  },
+                )
+              ],
+              child: const Row(
+                children: [
+                  Text("User"),
+                  SizedBox(
+                    width: 2,
+                  ),
+                  Icon(Icons.arrow_drop_down)
+                ],
               ),
-              onTap: () {},
             ),
-            PopupMenuItem(
-              child: Text("Logout"),
-              onTap: () {
-                html.window.location.reload();
-                setState(() {
-                  AppCache.clear();
-                  user = "";
-                });
-              },
-            )
-          ],
-          child: Row(
-            children: const [
-              Text("User"),
-              SizedBox(
-                width: 2,
-              ),
-              Icon(Icons.arrow_drop_down)
-            ],
-          ),
-        ),
+          );
+        },
       )
     ];
     List<Widget> actions = user == "" ? auth : donate;
@@ -158,11 +178,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               onPressed: () {},
                               style: ButtonStyle(
                                   backgroundColor:
-                                      MaterialStateProperty.all(Colors.red)),
+                                      MaterialStateProperty.all(Colors.red),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5)))),
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 15.0, vertical: 12),
-                                child: Text("About us"),
+                                child: Text(
+                                  "About us",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
                             const Expanded(flex: 4, child: SizedBox()),
@@ -235,10 +262,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -260,10 +287,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -287,10 +314,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -310,10 +337,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -337,10 +364,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -360,10 +387,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           elevation: 8,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
+                          child: const Padding(
+                            padding: EdgeInsets.all(12.0),
                             child: Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.done,
                                   color: Colors.green,
@@ -385,11 +412,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {},
                       style: ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(Colors.red)),
+                              MaterialStateProperty.all(Colors.red),
+                          shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)))),
                       child: const Padding(
                         padding: EdgeInsets.symmetric(
                             horizontal: 15.0, vertical: 12),
-                        child: Text("About us"),
+                        child: Text(
+                          "About us",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
@@ -508,43 +541,57 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Text(
                 "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.\nAenean commodo ligula eget dolor. Aenean massa."),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: doctors
-                  .map((e) => Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Stack(
-                          alignment: Alignment.bottomCenter,
-                          children: [
-                            Card(
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Image.asset(
-                                e.keys.elementAt(e.length - 1),
-                                width: getScreenSize(context).width / 5,
-                              ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.all(12.0),
-                              decoration: BoxDecoration(
-                                  color: Colors.red.shade700,
-                                  borderRadius: BorderRadius.circular(15)),
-                              padding: const EdgeInsets.all(27),
-                              child: Text(
-                                e.values.elementAt(e.length - 1),
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            )
-                          ],
-                        ),
-                      ))
-                  .toList(),
+            BlocBuilder<AppCubit, AppState>(
+              builder: (context, state) {
+                var cubit = AppCubit().get(context);
+                return BuildCondition(
+                  condition: cubit.doctorModel != null,
+                  builder: (context) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                          3,
+                          (index) => Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: [
+                                    Card(
+                                      elevation: 5,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Image.network(
+                                        "$baseUrl${cubit.doctorModel?.doctors[index].image}",
+                                        width: getScreenSize(context).width / 5,
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.all(12.0),
+                                      decoration: BoxDecoration(
+                                          color: Colors.red.shade700,
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                      padding: const EdgeInsets.all(27),
+                                      child: Text(
+                                        "${cubit.doctorModel?.doctors[index].name}",
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              )),
+                    );
+                  },
+                  fallback: (context) => const SizedBox(
+                    height: 100,
+                  ),
+                );
+              },
             ),
             const SizedBox(
               height: 70,
@@ -855,24 +902,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         )
                       ],
                     ),
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 20),
-                        const Text(
+                        SizedBox(height: 20),
+                        Text(
                           "Useful Links",
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
-                          children: const [
+                          children: [
                             FaIcon(
                               FontAwesomeIcons.locationDot,
                               size: 17,
@@ -885,13 +932,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           ],
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
-                          children: const [
+                          children: [
                             FaIcon(
                               FontAwesomeIcons.phone,
                               size: 17,
@@ -905,13 +952,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           ],
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 20,
                         ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
-                          children: const [
+                          children: [
                             FaIcon(
                               Icons.email,
                               size: 17,
@@ -949,10 +996,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 20),
                         ElevatedButton(
                             onPressed: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.all(15.0),
+                            child: const Padding(
+                              padding: EdgeInsets.all(15.0),
                               child: Row(
-                                children: const [
+                                children: [
                                   FaIcon(
                                     Icons.phone,
                                     size: 17,
